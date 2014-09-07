@@ -1,0 +1,73 @@
+#!/bin/bash
+
+# Give the screens nice aliases
+syncmaster="DVI-I-2"
+shimian="DVI-I-3"
+projector="HDMI-0"
+
+echo "Syncmaster: $syncmaster"
+echo "Shimian: $shimian"
+
+# Parse the arguments
+if [[ $# < 1 ]] ; then
+	echo "
+No arguments provided.
+Defaulting \$mode to \"landscape\".
+"
+	mode="landscape";
+elif [[ $1 == "landscape" || $1 == "portrait" || $1 == "projector" ]] ; then
+	echo "
+Setting \$mode to $1.
+"
+	mode=$1;
+elif [[ $1 == --help ]] ; then
+	echo "
+Usage: xreset [MODE]
+MODE = \"landscape\" | \"portrait\"
+
+Written by Joel Williamson";
+fi
+
+# Determine the positions of the screens based on the alignments
+if [[ $mode == "landscape" ]] ; then
+	pos[0]="0x120";
+	pos[1]="1920x0"; # The Shimian is to the right of the syncmaster 
+elif [[ $mode == "portrait" ]] ; then
+	pos[0]="0x0"; # Still the secondary
+	pos[1]="1200x240"; # To the right and down somewhat
+elif [[ $mode == "projector" ]] ; then
+	pos[0]="0x1000";
+	pos[1]="1920x0";
+else
+	echo "Unknown mode, no positions set.";
+	exit;
+fi
+
+if [[ $mode == "projector" ]] ; then
+	xrandr --output $projector --preferred
+	xrandr --output $syncmaster --preferred
+	echo "Setting syncmaster to position ${pos[0]}"
+	xrandr --output $syncmaster --pos ${pos[0]}
+	echo "Setting projector to position ${pos[1]}"
+	xrandr --output $projector --pos ${pos[1]}
+	exit 0
+fi
+
+echo "Setting both displays to preferred resolution."
+xrandr --output $shimian --preferred
+xrandr --output $syncmaster --mode preferred
+
+if [[ $mode == "portrait" ]] ; then
+	echo "Rotating syncmaster to portrait."
+	xrandr --output $syncmaster --rotate left
+elif [[ $mode == "landscape" ]] ; then
+	echo "Rotating syncmaster to landscape."
+	xrandr --output $syncmaster --rotate normal
+fi
+
+echo "Setting syncmaster to position ${pos[0]}."
+xrandr --output $syncmaster --pos ${pos[0]}
+echo "Setting shimian to position ${pos[1]}."
+xrandr --output $shimian --pos ${pos[1]}
+
+xrandr --output $shimian --primary
