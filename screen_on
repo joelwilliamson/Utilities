@@ -1,0 +1,4 @@
+#!/bin/bash
+
+DISPLAY=:0 xset dpms force on
+DISPLAY=:0 xset s reset
