@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Give the screens nice aliases
 syncmaster="DVI-I-2"
